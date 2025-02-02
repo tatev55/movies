@@ -1,0 +1,21 @@
+.header{
+    width: 80%;
+    height: 100px;
+    margin: 0  auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title{
+    font-size: 45px;
+    color: #DB202C;
+    font-style: Style-ConcaveB;
+    text-transform: uppercase;
+}
+
+.fa-film{
+    font-size: 35px;
+    color: #DB202C;
+
+}

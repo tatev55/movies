@@ -1,0 +1,20 @@
+.questionsSection-container{
+    width: 100%;
+    height: auto;
+    background-color: #070B1C;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.text-question{
+    font-size: 24px;
+    color: white;
+}
+
+.fa-times{
+    font-size: 24px;
+    color: white;
+}
