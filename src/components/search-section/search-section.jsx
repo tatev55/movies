@@ -1,24 +1,20 @@
 import { useState, useEffect } from "react";
 import Button from "../button/button";
-import { Api } from "../../api/api";
-import { Storage } from "../../utils/storage";
-import SavedMoviesSection from "../savedMovie/saved-movie"; 
-import { baseUrl } from "../../utils/constant";
+import{api} from "../../api/api"
 import "./search-section.css";
 
-const SearchSection = ({ setMovies }) => {
+const SearchSection = ({ setMovies, handleSavedMoviesClick, showSavedMovies  }) => {
     const [value, setValue] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [showSavedMovies, setShowSavedMovies] = useState(false);  
-    const [savedMovies, setSavedMovies] = useState([]);  
-    const api = new Api(baseUrl);
+    const [isLoading, setIsLoading] = useState(false); 
+    const [timeOutId, setTimeoutId] = useState(null);
+    
 
     useEffect(() => {
         const fetchMovies = async () => {
             if (value.length >= 3) {
-                setIsLoading(true);
+                setIsLoading(true); 
                 try {
-                    const response = await api.getMovies(value);
+                    const response = await api.fetchMoviesBySearch(value);
                     if (response && response.Search) {
                         setMovies(response.Search);  
                     } else {
@@ -33,32 +29,25 @@ const SearchSection = ({ setMovies }) => {
             }
         };
 
+            
+        clearTimeout(timeOutId)
+      
         const timer = setTimeout(() => {
             fetchMovies();
-        }, 500); 
+        }, 1000);
 
-        return () => clearTimeout(timer); 
+        setTimeoutId(timer)
 
     }, [value, setMovies]);
 
-    useEffect(() => {
-       
-        const savedMoviesList = Storage.getItem("savedMovies") || [];
-        setSavedMovies(savedMoviesList);
-    }, [showSavedMovies]);
+    
 
-    const handleSearchChange = (e) => {
+
+    const handleSearchChange = (e) =>{
         setValue(e.target.value);
     };
 
-    const handleSavedMovies = () => {
-        setShowSavedMovies(!showSavedMovies);
-    };
-
-    const updateSavedMoviesState = (updatedMovies) => {
-        setSavedMovies(updatedMovies);  
-        Storage.setItem("savedMovies", updatedMovies);  
-    };
+    
 
     return (
         <div className="search-section">
@@ -72,36 +61,20 @@ const SearchSection = ({ setMovies }) => {
                     className="search-input"
                     placeholder="Search movie"
                 />
-                <Button className="button-saved" disabled={isLoading} onClick={handleSavedMovies}>
-                    SavedMovies
+                <Button 
+                className="button-saved" 
+                disabled={isLoading} 
+                onClick={handleSavedMoviesClick}>
+                    {showSavedMovies ? "All Movies" : "Saved Movies"}
                     <i className="fa-solid fa-chevron-right"></i>
                 </Button>
             </div>
 
-            <div className="movies-list">
-            {showSavedMovies && (
-                <div className="saved-movies-list">
-                    {savedMovies.length > 0 ? (
-                        savedMovies.map((movie) => (
-                            <SavedMoviesSection 
-                                key={movie.imdbID} 
-                                movie={movie} 
-                                updateSavedMoviesState={updateSavedMoviesState} 
-                            />
-                        ))
-                    ) : (
-                        <p>No saved movies found.</p>
-                    )}
-                </div>
-            )}
-            </div>
         </div>
     );
 };
 
 export default SearchSection;
-
-
 
 
 

@@ -1,22 +1,37 @@
-export class Api{
-    constructor(baseUrl){
-        this.baseUrl = baseUrl;
-    }
+import { baseUrl } from "../utils/constant";
 
-    async getMovies(query) {
-        try {
-            const response = await fetch(`${this.baseUrl}&s=${query}`);
-            const data = await response.json();
-            
-            if (response.status !== 200) {
-                throw new Error(response.status);
-            }
-    
+class Api {
+    constructor(apiKey) {
+      this.apiKey = apiKey;
+      this.baseUrl = baseUrl;
+    }
+  
+    async fetchByID(id) {
+      try {
+        const response = await fetch(
+          `${this.baseUrl}?i=${id}&apikey=${this.apiKey}`
+        );
+        const data = await response.json();
+            return data
+      } catch (error) {
+            return { success: false, data: null, error: error.message };
+      }
+    }
+  
+    async fetchMoviesBySearch(query, page = 1) {
+      try {
+        const response = await fetch(
+          `${this.baseUrl}?s=${encodeURIComponent(query)}&page=${page}&apikey=${
+            this.apiKey
+          }`
+        );
+        const data = await response.json();
+        
             return data;
-        } catch (error) {
-            console.log('Error fetching movies:', error);
-        }
+      } catch (error) {
+            return { success: false, data: [], error: error.message };
+      }
     }
-
-    
-}
+  }
+  
+  export const api = new Api("a71429a8");

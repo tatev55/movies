@@ -7,6 +7,7 @@
     justify-content: space-between;
     align-items: center;
     margin: 0 auto;
+    position: relative;
 }
 
 
@@ -24,6 +25,7 @@
 .box-description{
     width: 48%;
     height: auto;
+    
 }
 
 .movie-title{
@@ -44,4 +46,28 @@
     padding: .5rem;
     color: white;
     margin: 10px 0;
+}
+
+.saved{
+    width: 100px;
+    height: 30px;
+    background-color: #DB202C;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    color: white;
+    border: 0;
+}
+
+.saved:hover{
+    background-color: #ab363e;
+}
+
+.fa-bookmark{
+    color: #DB202C;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.savedIcon{
+    color: gold;
 }

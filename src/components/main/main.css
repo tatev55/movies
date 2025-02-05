@@ -26,12 +26,13 @@
     height: auto;
     background-color: #070B1C;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     
   }
 
-  .movies-box{
+  .saved-movies, .search-results-list{
     width: 90%;
     height: auto;
     display: flex;
@@ -40,4 +41,14 @@
     align-items: center;
     margin: 0 10px;
     
+  }
+
+  .statics{
+    color: white;
+    font-size: 24px;
+  }
+
+  .text-notFound{
+    color: white;
+    font-size: 24px;
   }
