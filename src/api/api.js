@@ -18,7 +18,7 @@ class Api {
       }
     }
   
-    async fetchMoviesBySearch(query, page = 1) {
+    async fetchMoviesBySearch(query, page ) {
       try {
         const response = await fetch(
           `${this.baseUrl}?s=${encodeURIComponent(query)}&page=${page}&apikey=${

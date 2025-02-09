@@ -1,5 +1,5 @@
-import Button from "../button/button";
-import { Storage } from "../../utils/storage";
+import Button from "../../button/button";
+import { Storage } from "../../../utils/storage";
 import { useState } from "react";
 import "./search-movie.css";
 

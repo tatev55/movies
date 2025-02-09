@@ -1,4 +1,4 @@
-import Main from "./components/main/main"
+import Main from "../src/components/pages//main/main"
 import QuestionsSection from "./components/questions-section/questions-section";
 import Footer from "./components/footer/footer";
 

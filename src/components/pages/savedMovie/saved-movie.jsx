@@ -1,5 +1,5 @@
-import Button from "../button/button";
-import { Storage } from "../../utils/storage";
+import Button from "../../button/button";
+import { Storage } from "../../../utils/storage";
 import "./saved-movie.css";
 
 const SavedMoviesSection = ({ movie, updateSavedMoviesState }) => {
