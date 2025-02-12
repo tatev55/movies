@@ -1,31 +1,55 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useReducer } from "react";
 import Button from "../../button/button";
 import "./search-section.css";
+
+
+const initialState = {
+    value: '',
+    timeOutId: null,
+};
+
+
+const reducer = (state, action) => {
+    switch (action.type) {
+        case "SET_VALUE":
+            return { ...state, value: action.payload };
+        case "SET_TIMEOUT_ID":
+            return { ...state, timeOutId: action.payload };
+        case "CLEAR_TIMEOUT":
+            return { ...state, timeOutId: null };
+        default:
+            return state;
+    }
+};
 
 const SearchSection = ({ 
     handleSavedMoviesClick,
     showSavedMovies,
     setSearchQuery 
 }) => {
-    const [value, setValue] = useState('');
-    const [timeOutId, setTimeoutId] = useState(null);
+    const [state, dispatch] = useReducer(reducer, initialState);
+    const inputRef = useRef(null);
+
+    useEffect(()=> {
+        inputRef.current.focus();
+    },[])
 
     useEffect(() => {
-        if (timeOutId) {
-            clearTimeout(timeOutId); 
+        if (state.timeOutId) {
+            clearTimeout(state.timeOutId); 
         }
 
         const timer = setTimeout(() => {
-            setSearchQuery(value); 
+            setSearchQuery(state.value); 
         }, 1000); 
 
-        setTimeoutId(timer); 
+        dispatch({ type: "SET_TIMEOUT_ID", payload: timer });
 
         return () => clearTimeout(timer); 
-    }, [value, setSearchQuery]); 
+    }, [state.value, setSearchQuery]); 
 
     const handleSearchChange = (e) => {
-        setValue(e.target.value); 
+        dispatch({ type: "SET_VALUE", payload: e.target.value }); 
     };
 
     return (
@@ -35,7 +59,8 @@ const SearchSection = ({
             <div className="search-item-box">
                 <input 
                     type="text"
-                    value={value}
+                    ref={inputRef}
+                    value={state.value}
                     onChange={handleSearchChange}
                     className="search-input"
                     placeholder="Search movie"
@@ -52,6 +77,7 @@ const SearchSection = ({
 };
 
 export default SearchSection;
+
 
 
 

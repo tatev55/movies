@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer} from "react";
 import Header from "../../header/header";
 import SearchSection from "../search-section/search-section";
 import SearchMovie from "../search-movie/search-movie";
@@ -9,15 +9,41 @@ import MoviesDetails from "../../movie-details/movie-details";
 import Pagination from "../../pagination/pagination";
 import "./main.css";
 
-const Main = () => {
-    const [movies, setMovies] = useState([]);  
-    const [isLoading, setLoading] = useState(true);
-    const [showSavedMovies, setShowSavedMovies] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);  
-    const [selectedMovie, setSelectedMovie] = useState(null); 
-    const [totalPages, setTotalPages] = useState(1);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [searchQuery, setSearchQuery] = useState(""); 
+const initialState ={
+    movies: [],
+    isLoading: true,
+    showSavedMovies: false,
+    isModalOpen: false,
+    selectedMovie: null,
+    totalPages: 1,
+    currentPage: 1,
+    searchQuery: "",
+
+};
+
+const MoviesReducer = (state, action) => {
+    switch (action.type) {
+        case "SET_MOVIES":
+            return { ...state, movies: action.payload.movies, totalPages: action.payload.totalPages };
+        case "SET_LOADING":
+            return { ...state, isLoading: action.payload };
+        case "SET_SHOW_SAVED_MOVIES":
+            return { ...state, showSavedMovies: action.payload };
+        case "SET_MODAL_OPEN":
+            return { ...state, isModalOpen: action.payload };
+        case "SET_SELECTED_MOVIE":
+            return { ...state, selectedMovie: action.payload };
+        case "SET_CURRENT_PAGE":
+            return { ...state, currentPage: action.payload };
+        case "SET_SEARCH_QUERY":
+            return { ...state, searchQuery: action.payload };
+        default:
+            return state;
+    }
+};
+
+const Main = () => { 
+    const [state, dispatch] = useReducer(MoviesReducer, initialState);
 
     const savedMovies = Storage.getItem("savedMovies") || [];
 
@@ -28,44 +54,53 @@ const Main = () => {
         const year = urlParams.get("year");
 
         if(movieId && title && year){
-            setIsModalOpen(true);
-            setSelectedMovie({imdbID: movieId, Title:title, Year: year});
+            dispatch({ type: "SET_MODAL_OPEN", payload: true });
+            dispatch({ type: "SET_SELECTED_MOVIE", payload: { imdbID: movieId, Title: title, Year: year } });
         }
     }, []);
 
   
     useEffect(() => {
-        setLoading(true);
+        dispatch({ type: "SET_LOADING", payload: true });
         const fetchMovies = async () => {
-            if (searchQuery) {
+            let movieData;
+            if (state.searchQuery) {
+                movieData = await api.fetchMoviesBySearch(state.searchQuery, state.currentPage);  
                 
-                const movieData = await api.fetchMoviesBySearch(searchQuery, currentPage);
-                if (movieData && movieData.Search) {
-                    setMovies(movieData.Search);
-                    setTotalPages(Math.ceil(movieData.totalResults / 10));
-                }
             } else {
+                movieData = await api.fetchMoviesBySearch("top", state.currentPage);
+        
+    
                 
-                const movieData = await api.fetchMoviesBySearch("top", currentPage);
-                if (movieData && movieData.Search) {
-                    setMovies(movieData.Search);
-                    setTotalPages(Math.ceil(movieData.totalResults / 10));
-                }
             }
-            setLoading(false);
+
+            if (movieData && movieData.Search) {
+                dispatch({
+                    type: "SET_MOVIES",
+                    payload: {
+                        movies: movieData.Search,
+                        totalPages: Math.ceil(movieData.totalResults / 10),
+                    },
+                });
+
+            
+            }
+            dispatch({ type: "SET_LOADING", payload: false });
+          
         };
         fetchMovies();
-    }, [currentPage, searchQuery]);
+    }, [state.currentPage, state.searchQuery]);
 
     const handleSavedMoviesClick = () => {
-        setShowSavedMovies(!showSavedMovies);
+        dispatch({ type: "SET_SHOW_SAVED_MOVIES", payload: !state.showSavedMovies });
     };
 
-    const displayMovies = showSavedMovies ? savedMovies : movies;
+    const displayMovies = state.showSavedMovies ? savedMovies : state.movies;
 
     const handleMovieClick = (movie) => {
-        setSelectedMovie(movie);
-        setIsModalOpen(true); 
+         
+        dispatch({ type: "SET_SELECTED_MOVIE", payload: movie });
+        dispatch({ type: "SET_MODAL_OPEN", payload: true });
         window.history.pushState(
             null, 
             "", 
@@ -74,14 +109,15 @@ const Main = () => {
     };
 
     const handleCloseModal = () => {
-        setIsModalOpen(false);  
-        setSelectedMovie(null); 
+        dispatch({ type: "SET_MODAL_OPEN", payload: false });
+        dispatch({ type: "SET_SELECTED_MOVIE", payload: null });
         window.history.pushState("", "", "/");
     };
 
     const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
+        if (page >= 1 && page <= state.totalPages) {
+    
+            dispatch({ type: "SET_CURRENT_PAGE", payload: page });
         }
     };
    
@@ -94,25 +130,27 @@ const Main = () => {
                     <Header />
                     <SearchSection 
                         handleSavedMoviesClick={handleSavedMoviesClick}
-                        showSavedMovies={showSavedMovies}
-                        currentPage={currentPage}
-                        setCurrentPage={setCurrentPage}
-                        setSearchQuery={setSearchQuery} 
+                        showSavedMovies={state.showSavedMovies}
+                        currentPage={state.currentPage}
+                        setCurrentPage={(page) => dispatch({ type: "SET_CURRENT_PAGE", payload: page })}
+                        setSearchQuery={(query) => dispatch({ type: "SET_SEARCH_QUERY", payload: query })}
                     />
                 </div>
             </div>
 
-            {isLoading ? (
-                <p className="text-notFound">Loading Movies...</p>
+            {state.isLoading ? (
+                <div className = "loading">
+                    <p className="text-notFound">Loading Movies...</p>
+                </div>
             ) : (
                 <div className="search-results">
                     <h2 className="title">Movies</h2>
-                    {showSavedMovies && (
+                    {state.showSavedMovies && (
                         <div className="statics">
                             <p>You liked {savedMovies.length} movies</p>
                         </div>  
                     )}
-                    {showSavedMovies ? (
+                    {state.showSavedMovies ? (
                         <div className="saved-movies">
                             {savedMovies.length > 0 ? (
                                 savedMovies.map((movie) => (
@@ -137,14 +175,14 @@ const Main = () => {
             )}
 
             <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
+                currentPage={state.currentPage}
+                totalPages={state.totalPages}
                 onPageChange={handlePageChange}
             />
 
-            {isModalOpen && (
-                <Modal open={isModalOpen} onClose={handleCloseModal} title={selectedMovie?.Title}>
-                    <MoviesDetails id={selectedMovie?.imdbID} />
+            {state.isModalOpen && (
+                <Modal open={state.isModalOpen} onClose={handleCloseModal} title={state.selectedMovie?.Title}>
+                    <MoviesDetails id={state.selectedMovie?.imdbID} />
                 </Modal>
             )}
         </div>
